@@ -1,4 +1,6 @@
 import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { authApi } from '../services/api';
 import {
   Container,
   Paper,
@@ -9,6 +11,7 @@ import {
   Tabs,
   Tab,
   Link,
+  Alert,
 } from '@mui/material';
 
 function TabPanel(props) {
@@ -26,6 +29,7 @@ function TabPanel(props) {
 }
 
 const Login = () => {
+  const navigate = useNavigate();
   const [tabValue, setTabValue] = useState(0);
   const [loginData, setLoginData] = useState({
     email: '',
@@ -37,15 +41,29 @@ const Login = () => {
     password: '',
     confirmPassword: '',
   });
+  const [error, setError] = useState('');
+  const [loading, setLoading] = useState(false);
 
   const handleTabChange = (event, newValue) => {
     setTabValue(newValue);
+    setError('');
   };
 
-  const handleLogin = (e) => {
+  const handleLogin = async (e) => {
     e.preventDefault();
-    // 處理登入邏輯
-    console.log('Login:', loginData);
+    setError('');
+    setLoading(true);
+    
+    try {
+      await authApi.login(loginData.email, loginData.password);
+      // 檢查是否有之前的頁面
+      const previousPath = sessionStorage.getItem('previousPath');
+      navigate(previousPath || '/');
+    } catch (err) {
+      setError(err.message);
+    } finally {
+      setLoading(false);
+    }
   };
 
   const handleRegister = (e) => {
@@ -67,6 +85,12 @@ const Login = () => {
           <Tab label="註冊" />
         </Tabs>
 
+        {error && (
+          <Box sx={{ px: 3, pt: 3 }}>
+            <Alert severity="error">{error}</Alert>
+          </Box>
+        )}
+
         {/* 登入表單 */}
         <TabPanel value={tabValue} index={0}>
           <Box component="form" onSubmit={handleLogin} sx={{ mt: 1 }}>
@@ -78,6 +102,7 @@ const Login = () => {
               type="email"
               value={loginData.email}
               onChange={(e) => setLoginData({ ...loginData, email: e.target.value })}
+              disabled={loading}
             />
             <TextField
               margin="normal"
@@ -87,14 +112,16 @@ const Login = () => {
               type="password"
               value={loginData.password}
               onChange={(e) => setLoginData({ ...loginData, password: e.target.value })}
+              disabled={loading}
             />
             <Button
               type="submit"
               fullWidth
               variant="contained"
               sx={{ mt: 3, mb: 2 }}
+              disabled={loading}
             >
-              登入
+              {loading ? '登入中...' : '登入'}
             </Button>
             <Box sx={{ textAlign: 'center' }}>
               <Link href="#" variant="body2">

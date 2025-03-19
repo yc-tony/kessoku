@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { useParams } from 'react-router-dom';
-import { storeApi } from '../services/api';
+import { useParams, useNavigate } from 'react-router-dom';
+import { storeApi, authApi } from '../services/api';
 import LocationOnIcon from '@mui/icons-material/LocationOn';
 import PhoneIcon from '@mui/icons-material/Phone';
 import EmailIcon from '@mui/icons-material/Email';
@@ -12,6 +12,7 @@ const INSTRUMENT_MAP = {
 
 const StoreDetail = () => {
   const { storeId } = useParams();
+  const navigate = useNavigate();
   const [store, setStore] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
@@ -62,25 +63,48 @@ const StoreDetail = () => {
       if (currentDateTimes.includes(time)) {
         // 取消選擇
         const newDateTimes = currentDateTimes.filter(t => t !== time);
-        return {
-          ...prev,
-          [classId]: {
-            ...currentClassTimes,
-            [date]: newDateTimes
-          }
-        };
+        const newClassTimes = { ...currentClassTimes, [date]: newDateTimes };
+        
+        // 如果該日期沒有選擇任何時段，則刪除該日期
+        if (newDateTimes.length === 0) {
+          delete newClassTimes[date];
+        }
+        
+        // 如果該教室沒有選擇任何時段，則刪除該教室
+        if (Object.keys(newClassTimes).length === 0) {
+          const newSelectedTimes = { ...prev };
+          delete newSelectedTimes[classId];
+          return newSelectedTimes;
+        }
+        
+        return { ...prev, [classId]: newClassTimes };
       } else {
         // 新增選擇
         return {
           ...prev,
           [classId]: {
             ...currentClassTimes,
-            [date]: [...currentDateTimes, time]
+            [date]: [...currentDateTimes, time].sort()
           }
         };
       }
     });
   };
+
+  const handleSubmit = () => {
+    if (!authApi.isAuthenticated()) {
+      // 保存當前頁面路徑
+      sessionStorage.setItem('previousPath', window.location.pathname);
+      navigate('/login');
+      return;
+    }
+
+    // TODO: 實現預約提交邏輯
+    console.log('預約資訊：', selectedTimes);
+  };
+
+  // 檢查是否有任何選擇的時段
+  const hasSelectedTimes = Object.keys(selectedTimes).length > 0;
 
   if (loading) {
     return (
@@ -174,12 +198,15 @@ const StoreDetail = () => {
                   ))}
                 </div>
 
-                {/* 預約按鈕 */}
-                {Object.keys(selectedTimes[classItem.id] || {}).length > 0 && (
+                {/* 已選擇的時段摘要 */}
+                {selectedTimes[classItem.id] && (
                   <div className="mt-4">
-                    <button className="btn btn-primary w-100">
-                      預約選擇的時段
-                    </button>
+                    <h6 className="text-primary mb-2">已選擇的時段：</h6>
+                    {Object.entries(selectedTimes[classItem.id]).map(([date, times]) => (
+                      <div key={date} className="small text-muted">
+                        {date}：{times.join('、')}
+                      </div>
+                    ))}
                   </div>
                 )}
               </div>
@@ -187,6 +214,42 @@ const StoreDetail = () => {
           </div>
         ))}
       </div>
+
+      {/* 統一提交按鈕 */}
+      {hasSelectedTimes && (
+        <div className="position-fixed bottom-0 start-0 w-100 bg-white shadow-lg p-3" style={{ zIndex: 1000 }}>
+          <div className="container-fluid" style={{ maxWidth: '1920px' }}>
+            <div className="d-flex justify-content-between align-items-center">
+              <div>
+                <h6 className="mb-1">已選擇 {Object.keys(selectedTimes).length} 間練習室</h6>
+                <div className="text-muted small">
+                  {Object.entries(selectedTimes).map(([classId, dates]) => {
+                    const classItem = store.classes.find(c => c.id === classId);
+                    const className = classItem?.name || classId;
+                    return (
+                      <div key={classId}>
+                        {className}：
+                        {Object.entries(dates).map(([date, times], index, arr) => (
+                          <span key={date}>
+                            {date} ({times.length} 個時段)
+                            {index < arr.length - 1 ? '、' : ''}
+                          </span>
+                        ))}
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+              <button 
+                className="btn btn-primary btn-lg"
+                onClick={handleSubmit}
+              >
+                提交預約
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

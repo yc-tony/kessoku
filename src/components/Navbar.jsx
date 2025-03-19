@@ -1,13 +1,22 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link, useLocation } from 'react-router-dom';
+import { authApi } from '../services/api';
 import MusicNoteIcon from '@mui/icons-material/MusicNote';
 import AccountCircle from '@mui/icons-material/AccountCircle';
 import 'bootstrap/dist/css/bootstrap.min.css';
 
 const Navbar = () => {
   const [showUserMenu, setShowUserMenu] = useState(false);
-  const isLoggedIn = false; // 這裡應該從認證狀態中獲取
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
   const location = useLocation();
+
+  useEffect(() => {
+    setIsLoggedIn(authApi.isAuthenticated());
+  }, [location]);
+
+  const handleLogout = () => {
+    authApi.logout();
+  };
 
   return (
     <nav className="navbar navbar-expand-lg navbar-dark bg-primary">
@@ -71,7 +80,7 @@ const Navbar = () => {
               </li>
               <li><hr className="dropdown-divider" /></li>
               <li>
-                <button className="dropdown-item">
+                <button className="dropdown-item" onClick={handleLogout}>
                   登出
                 </button>
               </li>

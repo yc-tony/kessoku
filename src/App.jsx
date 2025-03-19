@@ -5,6 +5,7 @@ import Home from './pages/Home';
 import Login from './pages/Login';
 import StudioManagement from './pages/StudioManagement';
 import StoreDetail from './pages/StoreDetail';
+import Profile from './pages/Profile';
 
 const App = () => {
   return (
@@ -15,6 +16,7 @@ const App = () => {
         <Route path="/login" element={<Login />} />
         <Route path="/studio-management" element={<StudioManagement />} />
         <Route path="/store/:storeId" element={<StoreDetail />} />
+        <Route path="/profile" element={<Profile />} />
       </Routes>
     </div>
   );

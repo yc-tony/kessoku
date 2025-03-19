@@ -4,6 +4,7 @@ import Navbar from './components/Navbar';
 import Home from './pages/Home';
 import Login from './pages/Login';
 import StudioManagement from './pages/StudioManagement';
+import StoreDetail from './pages/StoreDetail';
 
 const App = () => {
   return (
@@ -13,6 +14,7 @@ const App = () => {
         <Route exact path="/" element={<Home />} />
         <Route path="/login" element={<Login />} />
         <Route path="/studio-management" element={<StudioManagement />} />
+        <Route path="/store/:storeId" element={<StoreDetail />} />
       </Routes>
     </div>
   );

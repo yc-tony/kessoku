@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { Link } from 'react-router-dom';
 import SearchIcon from '@mui/icons-material/Search';
 import LocationOnIcon from '@mui/icons-material/LocationOn';
 import MusicNoteIcon from '@mui/icons-material/MusicNote';
@@ -229,9 +230,12 @@ const Home = () => {
                             </div>
                           ))}
                         </div>
-                        <button className="btn btn-primary w-100">
+                        <Link 
+                          to={`/store/${store.id}`} 
+                          className="btn btn-primary w-100"
+                        >
                           查看詳情
-                        </button>
+                        </Link>
                       </div>
                     </div>
                   </div>

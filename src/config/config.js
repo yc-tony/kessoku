@@ -1,5 +1,5 @@
 const config = {
-  API_HOST: '',
+  API_HOST: 'https://rurinaruririn.ddnsking.com',
   API_PREFIX: '/kessokuApi',
 };
 

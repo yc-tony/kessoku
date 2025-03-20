@@ -4,11 +4,8 @@ import { storeApi, authApi } from '../services/api';
 import LocationOnIcon from '@mui/icons-material/LocationOn';
 import PhoneIcon from '@mui/icons-material/Phone';
 import EmailIcon from '@mui/icons-material/Email';
-
-const INSTRUMENT_MAP = {
-  'DRUMS': '爵士鼓',
-  'PIANO': '鋼琴'
-};
+import { formatDuration } from '../utils/formatters';
+import { INSTRUMENT_MAP } from '../utils/constants';
 
 const StoreDetail = () => {
   const { storeId } = useParams();
@@ -169,7 +166,10 @@ const StoreDetail = () => {
                 <p className="text-muted mb-2">
                   可用樂器：{classItem.instruments.map(code => INSTRUMENT_MAP[code] || code).join('、')}
                 </p>
-                <p className="text-muted mb-3">{classItem.description}</p>
+                <p className="text-muted mb-2">{classItem.description}</p>
+                <p className="text-primary mb-3">
+                  租金：{classItem.price} 元 / {formatDuration(classItem.userDuration)}
+                </p>
                 
                 {/* 時間選擇區域 */}
                 <div className="mt-4">

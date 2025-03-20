@@ -60,7 +60,7 @@ export const authApi = {
         localStorage.setItem('token', token);
         localStorage.setItem('userInfo', JSON.stringify(decodedToken));
         return response.data;
-      } catch (decodeError) {
+      } catch {
         throw new Error('無效的 token 格式');
       }
     } catch (error) {

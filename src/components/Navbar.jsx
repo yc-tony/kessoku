@@ -61,13 +61,20 @@ const Navbar = () => {
         {isLoggedIn ? (
           <div className="dropdown">
             <button
-              className="btn btn-link text-white p-0"
+              className="btn btn-link text-white p-0 position-relative"
               type="button"
               onClick={() => setShowUserMenu(!showUserMenu)}
             >
               <AccountCircle style={{ fontSize: '2rem' }} />
             </button>
-            <ul className={`dropdown-menu dropdown-menu-end ${showUserMenu ? 'show' : ''}`}>
+            <ul 
+              className={`dropdown-menu ${showUserMenu ? 'show' : ''}`}
+              style={{
+                position: 'absolute',
+                right: 0,
+                left: 'auto'
+              }}
+            >
               <li>
                 <Link to="/profile" className="dropdown-item">
                   個人資料

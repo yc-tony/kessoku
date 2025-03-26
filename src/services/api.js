@@ -133,6 +133,16 @@ export const storeApi = {
       throw new Error(error.response?.data?.message || '獲取練習室訂單失敗');
     }
   },
+
+  // 提交訂單
+  submitOrder: async (orderData) => {
+    try {
+      const response = await apiClient.post('/class/order', orderData);
+      return response.data;
+    } catch (error) {
+      throw new Error(error.response?.data?.message || '提交訂單失敗');
+    }
+  },
 };
 
 export default apiClient; 

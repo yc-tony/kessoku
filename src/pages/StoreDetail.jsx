@@ -15,6 +15,9 @@ const StoreDetail = () => {
   const [error, setError] = useState('');
   const [classOrders, setClassOrders] = useState({});
   const [selectedTimes, setSelectedTimes] = useState({});
+  const [submitting, setSubmitting] = useState(false);
+  const [submitError, setSubmitError] = useState('');
+  const [submitSuccess, setSubmitSuccess] = useState(false);
 
   useEffect(() => {
     fetchStoreInfo();
@@ -88,16 +91,49 @@ const StoreDetail = () => {
     });
   };
 
-  const handleSubmit = () => {
+  const handleSubmit = async () => {
     if (!authApi.isAuthenticated()) {
-      // 保存當前頁面路徑
       sessionStorage.setItem('previousPath', window.location.pathname);
       navigate('/login');
       return;
     }
 
-    // TODO: 實現預約提交邏輯
-    console.log('預約資訊：', selectedTimes);
+    setSubmitting(true);
+    setSubmitError('');
+    setSubmitSuccess(false);
+
+    try {
+      // 構建訂單內容
+      const orderContents = Object.entries(selectedTimes).map(([classId, dates]) => {
+        const classItem = store.classes.find(c => c.id === classId);
+        return Object.entries(dates).map(([date, times]) => ({
+          classId,
+          orderDate: date,
+          userDuration: classItem.userDuration,
+          times
+        }));
+      }).flat();
+
+      const response = await storeApi.submitOrder({
+        orderContents
+      });
+
+      if (response.data && response.data.orderIds) {
+        setSubmitSuccess(true);
+        // 3秒後重新載入頁面
+        setTimeout(() => {
+          window.location.reload();
+        }, 3000);
+      }
+    } catch (err) {
+      setSubmitError(err.message);
+      // 3秒後重新載入頁面
+      setTimeout(() => {
+        window.location.reload();
+      }, 3000);
+    } finally {
+      setSubmitting(false);
+    }
   };
 
   // 檢查是否有任何選擇的時段
@@ -243,9 +279,28 @@ const StoreDetail = () => {
               <button 
                 className="btn btn-primary btn-lg"
                 onClick={handleSubmit}
+                disabled={submitting}
               >
-                提交預約
+                {submitting ? (
+                  <>
+                    <span className="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>
+                    提交中...
+                  </>
+                ) : (
+                  '提交預約'
+                )}
               </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* 提交結果提示 */}
+      {(submitSuccess || submitError) && (
+        <div className="position-fixed top-0 start-50 translate-middle-x mt-3" style={{ zIndex: 1100 }}>
+          <div className={`toast show ${submitSuccess ? 'bg-success' : 'bg-danger'} text-white`} role="alert">
+            <div className="toast-body text-center">
+              {submitSuccess ? '預約成功！' : `預約失敗：${submitError}`}
             </div>
           </div>
         </div>

@@ -120,9 +120,9 @@ const StoreDetail = () => {
 
       if (response.data && response.data.orderIds) {
         setSubmitSuccess(true);
-        // 3秒後重新載入頁面
+        // 3秒後導向到我的預約頁面
         setTimeout(() => {
-          window.location.reload();
+          navigate('/bookings');
         }, 3000);
       }
     } catch (err) {
@@ -131,8 +131,6 @@ const StoreDetail = () => {
       setTimeout(() => {
         window.location.reload();
       }, 3000);
-    } finally {
-      setSubmitting(false);
     }
   };
 

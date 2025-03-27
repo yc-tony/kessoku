@@ -35,18 +35,6 @@ const Navbar = () => {
 
         {/* 導航鏈接 */}
         <div className="navbar-nav me-auto">
-          <Link 
-            to="/" 
-            className={`nav-link ${location.pathname === '/' ? 'active' : ''}`}
-          >
-            首頁
-          </Link>
-          <Link 
-            to="/search" 
-            className={`nav-link ${location.pathname === '/search' ? 'active' : ''}`}
-          >
-            搜尋練習室
-          </Link>
           {isLoggedIn && (
             <Link 
               to="/bookings" 

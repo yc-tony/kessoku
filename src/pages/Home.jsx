@@ -30,8 +30,8 @@ const Home = () => {
         instrument: searchParams.instrument,
       });
       
-      if (response.data && response.data.stores) {
-        setStores(response.data.stores);
+      if (response.data) {
+        setStores(response.data);
       } else {
         setStores([]);
       }
@@ -112,19 +112,7 @@ const Home = () => {
                 </div>
               </div>
               <div className="col-3">
-                <div className="form-floating">
-                  <input
-                    type="date"
-                    className="form-control"
-                    id="dateInput"
-                    value={searchParams.date}
-                    onChange={(e) => setSearchParams({ ...searchParams, date: e.target.value })}
-                  />
-                  <label htmlFor="dateInput">
-                    <AccessTimeIcon className="me-2" />
-                    預約日期
-                  </label>
-                </div>
+                
               </div>
               <div className="col-3">
                 <button

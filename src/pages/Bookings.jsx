@@ -45,17 +45,6 @@ const Bookings = () => {
     }
   };
 
-  const formatDateTime = (dateTimeString) => {
-    const date = new Date(dateTimeString);
-    return date.toLocaleString('zh-TW', {
-      year: 'numeric',
-      month: '2-digit',
-      day: '2-digit',
-      hour: '2-digit',
-      minute: '2-digit'
-    });
-  };
-
   if (loading) {
     return (
       <div className="container-fluid py-4" style={{ maxWidth: '1920px' }}>
@@ -107,7 +96,7 @@ const Bookings = () => {
                   </td>
                   <td>
                     <AccessTimeIcon className="me-2" />
-                    {formatDateTime(order.orderStartDate)} - {formatDateTime(order.orderEndDate)}
+                    {order.orderStartDate} - {order.orderEndDate}
                   </td>
                   <td>
                     <AttachMoneyIcon className="me-2" />

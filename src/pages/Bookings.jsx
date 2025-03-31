@@ -77,22 +77,26 @@ const Bookings = () => {
           目前沒有預約記錄
         </div>
       ) : (
-        <div className="row g-4">
-          {orders.map((order) => (
-            <div key={order.orderId} className="col-md-6">
-              <div className="card h-100">
-                <div className="card-body">
-                  <div className="d-flex justify-content-between align-items-start mb-3">
-                    <h5 className="card-title mb-0">
-                      <MusicNoteIcon className="me-2" />
-                      {order.className}
-                    </h5>
-                    <span className={`badge bg-${ORDER_STATUS_STYLE_MAP[order.orderStatus]}`}>
-                      {ORDER_STATUS_MAP[order.orderStatus]}
-                    </span>
-                  </div>
-                  
-                  <div className="mb-3">
+        <div className="table-responsive">
+          <table className="table table-hover">
+            <thead>
+              <tr>
+                <th>教室名稱</th>
+                <th>工作室</th>
+                <th>預約時間</th>
+                <th>價格</th>
+                <th>狀態</th>
+                <th>操作</th>
+              </tr>
+            </thead>
+            <tbody>
+              {orders.map((order) => (
+                <tr key={order.orderId}>
+                  <td>
+                    <MusicNoteIcon className="me-2" />
+                    {order.className}
+                  </td>
+                  <td>
                     <Link 
                       to={`/store/${order.storeId}`}
                       className="text-decoration-none"
@@ -100,30 +104,34 @@ const Bookings = () => {
                       <LocationOnIcon className="me-2" />
                       {order.storeName}
                     </Link>
-                  </div>
-
-                  <div className="mb-3">
+                  </td>
+                  <td>
                     <AccessTimeIcon className="me-2" />
                     {formatDateTime(order.orderStartDate)} - {formatDateTime(order.orderEndDate)}
-                  </div>
-
-                  <div className="mb-3">
+                  </td>
+                  <td>
                     <AttachMoneyIcon className="me-2" />
                     {order.price} 元
-                  </div>
-
-                  {order.orderStatus !== 'CANCEL' && (
-                    <button
-                      className="btn btn-danger"
-                      onClick={() => handleCancelOrder(order.orderId)}
-                    >
-                      取消預約
-                    </button>
-                  )}
-                </div>
-              </div>
-            </div>
-          ))}
+                  </td>
+                  <td>
+                    <span className={`badge bg-${ORDER_STATUS_STYLE_MAP[order.orderStatus]}`}>
+                      {ORDER_STATUS_MAP[order.orderStatus]}
+                    </span>
+                  </td>
+                  <td>
+                    {order.orderStatus !== 'CANCEL' && (
+                      <button
+                        className="btn btn-danger btn-sm"
+                        onClick={() => handleCancelOrder(order.orderId)}
+                      >
+                        取消預約
+                      </button>
+                    )}
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
         </div>
       )}
 

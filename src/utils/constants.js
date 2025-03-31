@@ -40,4 +40,20 @@ export const INSTRUMENTS = [
 export const INSTRUMENT_MAP = {
   'DRUMS': '爵士鼓',
   'PIANO': '鋼琴'
+};
+
+// 訂單狀態映射
+export const ORDER_STATUS_MAP = {
+  REVIEWING: '審查中',
+  PURCHASING: '待付訂金',
+  ACTIVE: '預約成功',
+  CANCEL: '取消預約'
+};
+
+// 訂單狀態樣式映射
+export const ORDER_STATUS_STYLE_MAP = {
+  REVIEWING: 'warning',
+  PURCHASING: 'info',
+  ACTIVE: 'success',
+  CANCEL: 'secondary'
 }; 

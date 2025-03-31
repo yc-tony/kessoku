@@ -145,4 +145,26 @@ export const storeApi = {
   },
 };
 
+export const orderApi = {
+  // 獲取我的訂單列表
+  getMyOrders: async () => {
+    try {
+      const response = await apiClient.get('/class/myOrders');
+      return response.data;
+    } catch (error) {
+      throw new Error(error.response?.data?.message || '獲取訂單列表失敗');
+    }
+  },
+
+  // 取消訂單
+  cancelOrder: async (orderId) => {
+    try {
+      const response = await apiClient.patch(`/classorder/cancel/${orderId}`);
+      return response.data;
+    } catch (error) {
+      throw new Error(error.response?.data?.message || '取消訂單失敗');
+    }
+  }
+};
+
 export default apiClient; 

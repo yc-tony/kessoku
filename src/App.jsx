@@ -6,6 +6,7 @@ import Login from './pages/Login';
 import StudioManagement from './pages/StudioManagement';
 import StoreDetail from './pages/StoreDetail';
 import Profile from './pages/Profile';
+import Bookings from './pages/Bookings';
 
 const App = () => {
   return (
@@ -17,6 +18,7 @@ const App = () => {
         <Route path="/studio-management" element={<StudioManagement />} />
         <Route path="/store/:storeId" element={<StoreDetail />} />
         <Route path="/profile" element={<Profile />} />
+        <Route path="/bookings" element={<Bookings />} />
       </Routes>
     </div>
   );

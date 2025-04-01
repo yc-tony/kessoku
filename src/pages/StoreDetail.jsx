@@ -13,7 +13,7 @@ const StoreDetail = () => {
   const [store, setStore] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
-  const [classOrders, setClassOrders] = useState({});
+  const [classBooks, setClassBooks] = useState({});
   const [selectedTimes, setSelectedTimes] = useState({});
   const [submitting, setSubmitting] = useState(false);
   const [submitError, setSubmitError] = useState('');
@@ -30,17 +30,17 @@ const StoreDetail = () => {
       setStore(response.data);
       
       // 獲取每個教室的預約情況
-      const ordersPromises = response.data.classes.map(async (classItem) => {
-        const ordersResponse = await storeApi.getClassOrders(classItem.id);
-        return { classId: classItem.id, orders: ordersResponse.data };
+      const bookingsPromises = response.data.classes.map(async (classItem) => {
+        const bookResponse = await storeApi.getClassBookings(classItem.id);
+        return { classId: classItem.id, books: bookResponse.data };
       });
       
-      const ordersResults = await Promise.all(ordersPromises);
-      const ordersMap = {};
-      ordersResults.forEach(result => {
-        ordersMap[result.classId] = result.orders;
+      const booksResults = await Promise.all(bookingsPromises);
+      const booksMap = {};
+      booksResults.forEach(result => {
+        booksMap[result.classId] = result.books;
       });
-      setClassOrders(ordersMap);
+      setClassBooks(booksMap);
     } catch (err) {
       setError(err.message);
     } finally {
@@ -49,9 +49,9 @@ const StoreDetail = () => {
   };
 
   const isTimeSlotBooked = (classId, date, time) => {
-    const classOrderList = classOrders[classId] || [];
-    return classOrderList.some(order => 
-      order.date === date && order.timeList.includes(time)
+    const classBookTimeList = classBooks[classId] || [];
+    return classBookTimeList.some(booking => 
+      booking.date === date && booking.timeList.includes(time)
     );
   };
 
@@ -104,21 +104,19 @@ const StoreDetail = () => {
 
     try {
       // 構建訂單內容
-      const orderContents = Object.entries(selectedTimes).map(([classId, dates]) => {
-        const classItem = store.classes.find(c => c.id === classId);
+      const bookContents = Object.entries(selectedTimes).map(([classId, dates]) => {
         return Object.entries(dates).map(([date, times]) => ({
           classId,
-          orderDate: date,
-          userDuration: classItem.userDuration,
+          bookDate: date,
           times
         }));
       }).flat();
 
-      const response = await storeApi.submitOrder({
-        orderContents
+      const response = await storeApi.submitBooking({
+        bookContents
       });
 
-      if (response.data && response.data.orderIds) {
+      if (response.data && response.data.bookIds) {
         setSubmitSuccess(true);
         // 3秒後導向到我的預約頁面
         setTimeout(() => {
@@ -208,7 +206,7 @@ const StoreDetail = () => {
                 {/* 時間選擇區域 */}
                 <div className="mt-4">
                   <h5 className="mb-3">可預約時段</h5>
-                  {classItem.orderDateTimeList.map((dateTime) => (
+                  {classItem.bookDateTimeList.map((dateTime) => (
                     <div key={dateTime.date} className="mb-4">
                       <h6 className="mb-2">{dateTime.date}</h6>
                       <div className="d-flex flex-wrap gap-2">

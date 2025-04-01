@@ -1,14 +1,14 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import { orderApi } from '../services/api';
-import { ORDER_STATUS_MAP, ORDER_STATUS_STYLE_MAP } from '../utils/constants';
+import { bookApi } from '../services/api';
+import { BOOK_STATUS_MAP, BOOK_STATUS_STYLE_MAP } from '../utils/constants';
 import AccessTimeIcon from '@mui/icons-material/AccessTime';
 import LocationOnIcon from '@mui/icons-material/LocationOn';
 import MusicNoteIcon from '@mui/icons-material/MusicNote';
 import AttachMoneyIcon from '@mui/icons-material/AttachMoney';
 
 const Bookings = () => {
-  const [orders, setOrders] = useState([]);
+  const [bookings, setBookings] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [showError, setShowError] = useState(false);
@@ -16,14 +16,14 @@ const Bookings = () => {
   const [successMessage, setSuccessMessage] = useState('');
 
   useEffect(() => {
-    fetchOrders();
+    fetchBookings();
   }, []);
 
-  const fetchOrders = async () => {
+  const fetchBookings = async () => {
     try {
       setLoading(true);
-      const response = await orderApi.getMyOrders();
-      setOrders(response.data);
+      const response = await bookApi.getMyBookings();
+      setBookings(response.data);
     } catch (err) {
       setError(err.message);
       setShowError(true);
@@ -32,13 +32,13 @@ const Bookings = () => {
     }
   };
 
-  const handleCancelOrder = async (orderId) => {
+  const handleCancelBooking = async (bookId) => {
     try {
-      await orderApi.cancelOrder(orderId);
+      await bookApi.cancelOrder(bookId);
       setSuccessMessage('訂單已成功取消');
       setShowSuccess(true);
       // 重新獲取訂單列表
-      fetchOrders();
+      fetchBookings();
     } catch (err) {
       setError(err.message);
       setShowError(true);
@@ -61,7 +61,7 @@ const Bookings = () => {
     <div className="container-fluid py-4" style={{ maxWidth: '1920px' }}>
       <h2 className="mb-4">我的預約</h2>
 
-      {orders.length === 0 ? (
+      {bookings.length === 0 ? (
         <div className="alert alert-info" role="alert">
           目前沒有預約記錄
         </div>
@@ -79,39 +79,39 @@ const Bookings = () => {
               </tr>
             </thead>
             <tbody>
-              {orders.map((order) => (
-                <tr key={order.orderId}>
+              {bookings.map((booking) => (
+                <tr key={booking.bookId}>
                   <td>
                     <MusicNoteIcon className="me-2" />
-                    {order.className}
+                    {booking.className}
                   </td>
                   <td>
                     <Link 
-                      to={`/store/${order.storeId}`}
+                      to={`/store/${booking.storeId}`}
                       className="text-decoration-none"
                     >
                       <LocationOnIcon className="me-2" />
-                      {order.storeName}
+                      {booking.storeName}
                     </Link>
                   </td>
                   <td>
                     <AccessTimeIcon className="me-2" />
-                    {order.orderStartDate} - {order.orderEndDate}
+                    {booking.bookStartDate} - {booking.bookEndDate}
                   </td>
                   <td>
                     <AttachMoneyIcon className="me-2" />
-                    {order.price} 元
+                    {booking.price} 元
                   </td>
                   <td>
-                    <span className={`badge bg-${ORDER_STATUS_STYLE_MAP[order.orderStatus]}`}>
-                      {ORDER_STATUS_MAP[order.orderStatus]}
+                    <span className={`badge bg-${BOOK_STATUS_STYLE_MAP[booking.bookStatus]}`}>
+                      {BOOK_STATUS_MAP[booking.bookStatus]}
                     </span>
                   </td>
                   <td>
-                    {order.orderStatus !== 'CANCEL' && (
+                    {booking.bookStatus !== 'CANCEL' && (
                       <button
                         className="btn btn-danger btn-sm"
-                        onClick={() => handleCancelOrder(order.orderId)}
+                        onClick={() => handleCancelBooking(booking.bookId)}
                       >
                         取消預約
                       </button>

@@ -43,7 +43,7 @@ export const INSTRUMENT_MAP = {
 };
 
 // 訂單狀態映射
-export const ORDER_STATUS_MAP = {
+export const BOOK_STATUS_MAP = {
   REVIEWING: '審查中',
   PURCHASING: '待付訂金',
   ACTIVE: '預約成功',
@@ -51,7 +51,7 @@ export const ORDER_STATUS_MAP = {
 };
 
 // 訂單狀態樣式映射
-export const ORDER_STATUS_STYLE_MAP = {
+export const BOOK_STATUS_STYLE_MAP = {
   REVIEWING: 'warning',
   PURCHASING: 'info',
   ACTIVE: 'success',

@@ -125,9 +125,9 @@ export const storeApi = {
   },
 
   // 獲取練習室訂單
-  getClassOrders: async (classId) => {
+  getClassBookings: async (classId) => {
     try {
-      const response = await apiClient.get(`/public/classOrders/${classId}`);
+      const response = await apiClient.get(`/public/classBookings/${classId}`);
       return response.data;
     } catch (error) {
       throw new Error(error.response?.data?.message || '獲取練習室訂單失敗');
@@ -135,9 +135,9 @@ export const storeApi = {
   },
 
   // 提交訂單
-  submitOrder: async (orderData) => {
+  submitBooking: async (bookingData) => {
     try {
-      const response = await apiClient.post('/class/order', orderData);
+      const response = await apiClient.post('/class/booking', bookingData);
       return response.data;
     } catch (error) {
       throw new Error(error.response?.data?.message || '提交訂單失敗');
@@ -145,11 +145,11 @@ export const storeApi = {
   },
 };
 
-export const orderApi = {
+export const bookApi = {
   // 獲取我的訂單列表
-  getMyOrders: async () => {
+  getMyBookings: async () => {
     try {
-      const response = await apiClient.get('/class/myOrders');
+      const response = await apiClient.get('/class/myBookings');
       return response.data;
     } catch (error) {
       throw new Error(error.response?.data?.message || '獲取訂單列表失敗');
@@ -157,9 +157,9 @@ export const orderApi = {
   },
 
   // 取消訂單
-  cancelOrder: async (orderId) => {
+  cancelBookin: async (bookId) => {
     try {
-      const response = await apiClient.patch(`/classorder/cancel/${orderId}`);
+      const response = await apiClient.patch(`/class/booking/cancel/${bookId}`);
       return response.data;
     } catch (error) {
       throw new Error(error.response?.data?.message || '取消訂單失敗');

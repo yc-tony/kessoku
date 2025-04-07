@@ -164,7 +164,7 @@ const Home = () => {
                         className="card-img-top"
                         style={{
                           height: '200px',
-                          backgroundImage: `url(https://source.unsplash.com/random/400x200?music-studio&${store.id})`,
+                          backgroundImage: `url(https://res.cloudinary.com/dx87xnlmr/image/upload/w_300,h_200,c_fill/store/${store.id})`,
                           backgroundSize: 'cover',
                           backgroundPosition: 'center',
                         }}

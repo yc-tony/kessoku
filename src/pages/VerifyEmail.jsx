@@ -31,21 +31,6 @@ const VerifyEmail = () => {
     }
   };
 
-  const handleResendCode = async () => {
-    setLoading(true);
-    setError('');
-    setSuccess('');
-
-    try {
-      await accountApi.sendVerificationCode(email);
-      setSuccess('驗證碼已重新發送到您的郵箱');
-    } catch (err) {
-      setError(err.message || '發送驗證碼失敗，請重試');
-    } finally {
-      setLoading(false);
-    }
-  };
-
   if (!email) {
     return (
       <Container maxWidth="sm" sx={{ mt: 4 }}>
@@ -82,15 +67,6 @@ const VerifyEmail = () => {
             disabled={loading}
           >
             {loading ? '驗證中...' : '驗證'}
-          </Button>
-          <Button
-            variant="text"
-            fullWidth
-            sx={{ mt: 1 }}
-            onClick={handleResendCode}
-            disabled={loading}
-          >
-            重新發送驗證碼
           </Button>
         </form>
       </Paper>

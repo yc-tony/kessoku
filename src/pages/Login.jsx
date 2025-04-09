@@ -37,10 +37,7 @@ const Login = () => {
 
   // 重置密碼表單
   const [resetForm, setResetForm] = useState({
-    email: '',
-    code: '',
-    newPassword: '',
-    confirmPassword: ''
+    email: ''
   });
 
   // 表單驗證
@@ -111,7 +108,8 @@ const Login = () => {
   };
 
   // 處理發送重置密碼驗證碼
-  const handleSendResetCode = async () => {
+  const handleResetPassword = async (e) => {
+    e.preventDefault();
     if (!validateEmail(resetForm.email)) {
       setError('請輸入有效的電子郵件地址');
       return;
@@ -123,32 +121,10 @@ const Login = () => {
     try {
       await accountApi.sendResetCode(resetForm.email);
       setSuccess('重置密碼驗證碼已發送到您的郵箱');
-    } catch (err) {
-      setError(err.message);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  // 處理重置密碼
-  const handleResetPassword = async (e) => {
-    e.preventDefault();
-    setError('');
-    setLoading(true);
-
-    try {
-      if (!validatePassword(resetForm.newPassword)) {
-        throw new Error('密碼必須包含大小寫字母和數字，且長度至少為 8 位');
-      }
-
-      if (resetForm.newPassword !== resetForm.confirmPassword) {
-        throw new Error('兩次輸入的密碼不一致');
-      }
-
-      await accountApi.resetPassword(resetForm.email, resetForm.code, resetForm.newPassword);
-      setSuccess('密碼重置成功！');
       setTimeout(() => {
-        setActiveTab(0); // 返回登入頁面
+        navigate('/reset-password', { 
+          state: { email: resetForm.email } 
+        });
       }, 1500);
     } catch (err) {
       setError(err.message);
@@ -290,41 +266,6 @@ const Login = () => {
                 margin="normal"
                 required
               />
-              <Box sx={{ display: 'flex', gap: 1, mt: 2 }}>
-                <TextField
-                  fullWidth
-                  label="驗證碼"
-                  value={resetForm.code}
-                  onChange={(e) => setResetForm({ ...resetForm, code: e.target.value })}
-                  required
-                />
-                <Button
-                  variant="outlined"
-                  onClick={handleSendResetCode}
-                  disabled={loading || !resetForm.email}
-                >
-                  發送驗證碼
-                </Button>
-              </Box>
-              <TextField
-                fullWidth
-                label="新密碼"
-                type="password"
-                value={resetForm.newPassword}
-                onChange={(e) => setResetForm({ ...resetForm, newPassword: e.target.value })}
-                margin="normal"
-                required
-                helperText="密碼必須包含大小寫字母和數字，且長度至少為 8 位"
-              />
-              <TextField
-                fullWidth
-                label="確認新密碼"
-                type="password"
-                value={resetForm.confirmPassword}
-                onChange={(e) => setResetForm({ ...resetForm, confirmPassword: e.target.value })}
-                margin="normal"
-                required
-              />
               <Button
                 type="submit"
                 fullWidth
@@ -332,7 +273,7 @@ const Login = () => {
                 disabled={loading}
                 sx={{ mt: 3 }}
               >
-                {loading ? <CircularProgress size={24} /> : '重置密碼'}
+                {loading ? <CircularProgress size={24} /> : '發送重置密碼驗證碼'}
               </Button>
             </form>
           )}

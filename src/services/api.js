@@ -95,6 +95,82 @@ export const accountApi = {
     } catch (error) {
       throw new Error(error.response?.data?.message || '獲取個人資料失敗');
     }
+  },
+
+  createAccount: async (email, password, nickname) => {
+    try {
+      const response = await axios.post(
+        `${config.API_HOST}/account/create`,
+        { email, password, nickname },
+        {
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Basic ${config.BASIC_AUTH_PASSWORD}`
+          }
+        }
+      );
+      return response.data;
+    } catch (error) {
+      throw new Error(error.response?.data?.message || '註冊失敗');
+    }
+  },
+
+  verifyEmail: async (email, code) => {
+    try {
+      const response = await axios.post(
+        `${config.API_HOST}/account/email/validate`,
+        { email, validCode: code },
+        {
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Basic ${config.BASIC_AUTH_PASSWORD}`
+          }
+        }
+      );
+      return response.data;
+    } catch (error) {
+      throw new Error(error.response?.data?.message || '郵箱驗證失敗');
+    }
+  },
+
+  sendResetCode: async (email) => {
+    try {
+      const response = await axios.post(
+        `${config.API_HOST}/account/sendChangPasswordCode`,
+        { email },
+        {
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Basic ${config.BASIC_AUTH_PASSWORD}`
+          }
+        }
+      );
+      return response.data;
+    } catch (error) {
+      throw new Error(error.response?.data?.message || '發送重置密碼驗證碼失敗');
+    }
+  },
+
+  resetPassword: async (email, code, newPassword) => {
+    try {
+      const response = await axios.patch(
+        `${config.API_HOST}/account/update/password`,
+        { 
+          email, 
+          validCode: code, 
+          password: newPassword 
+        },
+        {
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Basic ${config.BASIC_AUTH_PASSWORD}`
+          }
+        }
+      );
+      return response.data;
+    } catch (error) {
+      throw new Error(error.response?.data?.message || '重置密碼失敗');
+    }
   }
 };
 

@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { authApi } from '../services/api';
+import { authApi, accountApi } from '../services/api';
 import {
   Container,
   Paper,
@@ -8,57 +8,63 @@ import {
   TextField,
   Button,
   Box,
+  Alert,
+  CircularProgress,
   Tabs,
   Tab,
-  Link,
-  Alert,
 } from '@mui/material';
-
-function TabPanel(props) {
-  const { children, value, index, ...other } = props;
-  return (
-    <div
-      role="tabpanel"
-      hidden={value !== index}
-      id={`simple-tabpanel-${index}`}
-      {...other}
-    >
-      {value === index && <Box sx={{ p: 3 }}>{children}</Box>}
-    </div>
-  );
-}
 
 const Login = () => {
   const navigate = useNavigate();
-  const [tabValue, setTabValue] = useState(0);
-  const [loginData, setLoginData] = useState({
+  const [activeTab, setActiveTab] = useState(0);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState('');
+  const [success, setSuccess] = useState('');
+
+  // 登入表單
+  const [loginForm, setLoginForm] = useState({
     email: '',
-    password: '',
+    password: ''
   });
-  const [registerData, setRegisterData] = useState({
-    name: '',
+
+  // 註冊表單
+  const [registerForm, setRegisterForm] = useState({
     email: '',
     password: '',
     confirmPassword: '',
+    nickname: ''
   });
-  const [error, setError] = useState('');
-  const [loading, setLoading] = useState(false);
 
-  const handleTabChange = (event, newValue) => {
-    setTabValue(newValue);
-    setError('');
+  // 重置密碼表單
+  const [resetForm, setResetForm] = useState({
+    email: '',
+    code: '',
+    newPassword: '',
+    confirmPassword: ''
+  });
+
+  // 表單驗證
+  const validateEmail = (email) => {
+    return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
   };
 
+  const validatePassword = (password) => {
+    return /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)[a-zA-Z\d]{8,}$/.test(password);
+  };
+
+  // 處理登入
   const handleLogin = async (e) => {
     e.preventDefault();
     setError('');
     setLoading(true);
-    
+
     try {
-      await authApi.login(loginData.email, loginData.password);
-      // 檢查是否有之前的頁面
+      await authApi.login(loginForm.email, loginForm.password);
+      setSuccess('登入成功！');
       const previousPath = sessionStorage.getItem('previousPath');
-      navigate(previousPath || '/');
+      setTimeout(() => {
+        navigate(previousPath || '/');
+      }, 1000);
     } catch (err) {
       setError(err.message);
     } finally {
@@ -66,120 +72,272 @@ const Login = () => {
     }
   };
 
-  const handleRegister = (e) => {
+  // 處理註冊
+  const handleRegister = async (e) => {
     e.preventDefault();
-    // 處理註冊邏輯
-    console.log('Register:', registerData);
+    setError('');
+    setLoading(true);
+
+    try {
+      if (!validateEmail(registerForm.email)) {
+        throw new Error('請輸入有效的電子郵件地址');
+      }
+
+      if (!validatePassword(registerForm.password)) {
+        throw new Error('密碼必須包含大小寫字母和數字，且長度至少為 8 位');
+      }
+
+      if (registerForm.password !== registerForm.confirmPassword) {
+        throw new Error('兩次輸入的密碼不一致');
+      }
+
+      await accountApi.createAccount(
+        registerForm.email,
+        registerForm.password,
+        registerForm.nickname
+      );
+
+      setSuccess('註冊成功！請前往驗證郵箱');
+      setTimeout(() => {
+        navigate('/verify-email', { 
+          state: { email: registerForm.email } 
+        });
+      }, 1500);
+    } catch (err) {
+      setError(err.message);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // 處理發送重置密碼驗證碼
+  const handleSendResetCode = async () => {
+    if (!validateEmail(resetForm.email)) {
+      setError('請輸入有效的電子郵件地址');
+      return;
+    }
+
+    setLoading(true);
+    setError('');
+
+    try {
+      await accountApi.sendResetCode(resetForm.email);
+      setSuccess('重置密碼驗證碼已發送到您的郵箱');
+    } catch (err) {
+      setError(err.message);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // 處理重置密碼
+  const handleResetPassword = async (e) => {
+    e.preventDefault();
+    setError('');
+    setLoading(true);
+
+    try {
+      if (!validatePassword(resetForm.newPassword)) {
+        throw new Error('密碼必須包含大小寫字母和數字，且長度至少為 8 位');
+      }
+
+      if (resetForm.newPassword !== resetForm.confirmPassword) {
+        throw new Error('兩次輸入的密碼不一致');
+      }
+
+      await accountApi.resetPassword(resetForm.email, resetForm.code, resetForm.newPassword);
+      setSuccess('密碼重置成功！');
+      setTimeout(() => {
+        setActiveTab(0); // 返回登入頁面
+      }, 1500);
+    } catch (err) {
+      setError(err.message);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleTabChange = (event, newValue) => {
+    setActiveTab(newValue);
+    setError('');
+    setSuccess('');
   };
 
   return (
-    <Container component="main" maxWidth="sm" sx={{ py: 8 }}>
-      <Paper elevation={3} sx={{ borderRadius: 2 }}>
-        <Tabs
-          value={tabValue}
-          onChange={handleTabChange}
-          aria-label="登入註冊選項"
-          centered
-        >
-          <Tab label="登入" />
-          <Tab label="註冊" />
-        </Tabs>
+    <Container maxWidth="sm">
+      <Box sx={{ mt: 4, mb: 4 }}>
+        <Paper elevation={3} sx={{ p: 4 }}>
+          <Typography variant="h4" component="h1" gutterBottom align="center">
+            帳號管理
+          </Typography>
 
-        {error && (
-          <Box sx={{ px: 3, pt: 3 }}>
-            <Alert severity="error">{error}</Alert>
-          </Box>
-        )}
+          <Tabs
+            value={activeTab}
+            onChange={handleTabChange}
+            variant="fullWidth"
+            sx={{ mb: 3 }}
+          >
+            <Tab label="登入" />
+            <Tab label="註冊" />
+            <Tab label="重置密碼" />
+          </Tabs>
 
-        {/* 登入表單 */}
-        <TabPanel value={tabValue} index={0}>
-          <Box component="form" onSubmit={handleLogin} sx={{ mt: 1 }}>
-            <TextField
-              margin="normal"
-              required
-              fullWidth
-              label="電子郵件"
-              type="email"
-              value={loginData.email}
-              onChange={(e) => setLoginData({ ...loginData, email: e.target.value })}
-              disabled={loading}
-            />
-            <TextField
-              margin="normal"
-              required
-              fullWidth
-              label="密碼"
-              type="password"
-              value={loginData.password}
-              onChange={(e) => setLoginData({ ...loginData, password: e.target.value })}
-              disabled={loading}
-            />
-            <Button
-              type="submit"
-              fullWidth
-              variant="contained"
-              sx={{ mt: 3, mb: 2 }}
-              disabled={loading}
-            >
-              {loading ? '登入中...' : '登入'}
-            </Button>
-            <Box sx={{ textAlign: 'center' }}>
-              <Link href="#" variant="body2">
-                忘記密碼？
-              </Link>
-            </Box>
-          </Box>
-        </TabPanel>
+          {error && (
+            <Alert severity="error" sx={{ mb: 2 }}>
+              {error}
+            </Alert>
+          )}
 
-        {/* 註冊表單 */}
-        <TabPanel value={tabValue} index={1}>
-          <Box component="form" onSubmit={handleRegister} sx={{ mt: 1 }}>
-            <TextField
-              margin="normal"
-              required
-              fullWidth
-              label="姓名"
-              value={registerData.name}
-              onChange={(e) => setRegisterData({ ...registerData, name: e.target.value })}
-            />
-            <TextField
-              margin="normal"
-              required
-              fullWidth
-              label="電子郵件"
-              type="email"
-              value={registerData.email}
-              onChange={(e) => setRegisterData({ ...registerData, email: e.target.value })}
-            />
-            <TextField
-              margin="normal"
-              required
-              fullWidth
-              label="密碼"
-              type="password"
-              value={registerData.password}
-              onChange={(e) => setRegisterData({ ...registerData, password: e.target.value })}
-            />
-            <TextField
-              margin="normal"
-              required
-              fullWidth
-              label="確認密碼"
-              type="password"
-              value={registerData.confirmPassword}
-              onChange={(e) => setRegisterData({ ...registerData, confirmPassword: e.target.value })}
-            />
-            <Button
-              type="submit"
-              fullWidth
-              variant="contained"
-              sx={{ mt: 3, mb: 2 }}
-            >
-              註冊
-            </Button>
-          </Box>
-        </TabPanel>
-      </Paper>
+          {success && (
+            <Alert severity="success" sx={{ mb: 2 }}>
+              {success}
+            </Alert>
+          )}
+
+          {/* 登入表單 */}
+          {activeTab === 0 && (
+            <form onSubmit={handleLogin}>
+              <TextField
+                fullWidth
+                label="電子郵件"
+                type="email"
+                value={loginForm.email}
+                onChange={(e) => setLoginForm({ ...loginForm, email: e.target.value })}
+                margin="normal"
+                required
+              />
+              <TextField
+                fullWidth
+                label="密碼"
+                type="password"
+                value={loginForm.password}
+                onChange={(e) => setLoginForm({ ...loginForm, password: e.target.value })}
+                margin="normal"
+                required
+              />
+              <Button
+                type="submit"
+                fullWidth
+                variant="contained"
+                disabled={loading}
+                sx={{ mt: 3 }}
+              >
+                {loading ? <CircularProgress size={24} /> : '登入'}
+              </Button>
+            </form>
+          )}
+
+          {/* 註冊表單 */}
+          {activeTab === 1 && (
+            <form onSubmit={handleRegister}>
+              <TextField
+                fullWidth
+                label="電子郵件"
+                type="email"
+                value={registerForm.email}
+                onChange={(e) => setRegisterForm({ ...registerForm, email: e.target.value })}
+                margin="normal"
+                required
+              />
+              <TextField
+                fullWidth
+                label="密碼"
+                type="password"
+                value={registerForm.password}
+                onChange={(e) => setRegisterForm({ ...registerForm, password: e.target.value })}
+                margin="normal"
+                required
+                helperText="密碼必須包含大小寫字母和數字，且長度至少為 8 位"
+              />
+              <TextField
+                fullWidth
+                label="確認密碼"
+                type="password"
+                value={registerForm.confirmPassword}
+                onChange={(e) => setRegisterForm({ ...registerForm, confirmPassword: e.target.value })}
+                margin="normal"
+                required
+              />
+              <TextField
+                fullWidth
+                label="暱稱"
+                value={registerForm.nickname}
+                onChange={(e) => setRegisterForm({ ...registerForm, nickname: e.target.value })}
+                margin="normal"
+                required
+              />
+              <Button
+                type="submit"
+                fullWidth
+                variant="contained"
+                disabled={loading}
+                sx={{ mt: 3 }}
+              >
+                {loading ? <CircularProgress size={24} /> : '註冊'}
+              </Button>
+            </form>
+          )}
+
+          {/* 重置密碼表單 */}
+          {activeTab === 2 && (
+            <form onSubmit={handleResetPassword}>
+              <TextField
+                fullWidth
+                label="電子郵件"
+                type="email"
+                value={resetForm.email}
+                onChange={(e) => setResetForm({ ...resetForm, email: e.target.value })}
+                margin="normal"
+                required
+              />
+              <Box sx={{ display: 'flex', gap: 1, mt: 2 }}>
+                <TextField
+                  fullWidth
+                  label="驗證碼"
+                  value={resetForm.code}
+                  onChange={(e) => setResetForm({ ...resetForm, code: e.target.value })}
+                  required
+                />
+                <Button
+                  variant="outlined"
+                  onClick={handleSendResetCode}
+                  disabled={loading || !resetForm.email}
+                >
+                  發送驗證碼
+                </Button>
+              </Box>
+              <TextField
+                fullWidth
+                label="新密碼"
+                type="password"
+                value={resetForm.newPassword}
+                onChange={(e) => setResetForm({ ...resetForm, newPassword: e.target.value })}
+                margin="normal"
+                required
+                helperText="密碼必須包含大小寫字母和數字，且長度至少為 8 位"
+              />
+              <TextField
+                fullWidth
+                label="確認新密碼"
+                type="password"
+                value={resetForm.confirmPassword}
+                onChange={(e) => setResetForm({ ...resetForm, confirmPassword: e.target.value })}
+                margin="normal"
+                required
+              />
+              <Button
+                type="submit"
+                fullWidth
+                variant="contained"
+                disabled={loading}
+                sx={{ mt: 3 }}
+              >
+                {loading ? <CircularProgress size={24} /> : '重置密碼'}
+              </Button>
+            </form>
+          )}
+        </Paper>
+      </Box>
     </Container>
   );
 };

@@ -1,0 +1,380 @@
+openapi: 3.0.0
+info:
+  title: Kessoku API
+  version: 1.0.0
+  description: Kessoku API documentation in rurina service
+
+servers:
+  - url: /
+    description: API base URL
+
+tags:
+  - name: Kessoku_Public
+    description: 公開服務
+  - name: Kessoku_Member
+    description: 會員服務(需註冊登入)
+  - name: Kessoku_Manufacture
+    description: 店家服務(帳號為店家)
+  - name: Account
+    description: 帳號相關
+  - name: OAuth
+    description: 登入認證
+
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+    basicAuth:
+      type: http
+      scheme: basic
+
+  schemas:
+    AccountInput:
+      type: object
+      properties:
+        email:
+          type: string
+          format: email
+        password:
+          type: string
+        nickname:
+          type: string
+
+    UpdateAccountInput:
+      type: object
+      properties:
+        email:
+          type: string
+          format: email
+        password:
+          type: string
+        nickname:
+          type: string
+        validCode:
+          type: string
+
+    SendEmailInput:
+      type: object
+      properties:
+        email:
+          type: string
+          format: email
+
+    ValidEmailInput:
+      type: object
+      properties:
+        email:
+          type: string
+          format: email
+        validCode:
+          type: string
+
+    JwtLoginInput:
+      type: object
+      properties:
+        email:
+          type: string
+          format: email
+        password:
+          type: string
+
+    BookClassesInput:
+      type: object
+      properties:
+        classId:
+          type: string
+        storeId:
+          type: string
+
+paths:
+  /account/create:
+    post:
+      tags:
+        - Account
+      summary: Create new account
+      security:
+        - basicAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AccountInput'
+      responses:
+        '200':
+          description: Account created successfully
+
+  /account/email/validate:
+    post:
+      tags:
+        - Account
+      summary: Validate email
+      security:
+        - basicAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ValidEmailInput'
+      responses:
+        '200':
+          description: Email validated successfully
+
+  /account/sendChangPasswordCode:
+    post:
+      tags:
+        - Account
+      summary: Send password change code
+      security:
+        - basicAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SendEmailInput'
+      responses:
+        '200':
+          description: Password change code sent successfully
+
+  /account/update/password:
+    patch:
+      tags:
+        - Account
+      summary: Update password
+      security:
+        - basicAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateAccountInput'
+      responses:
+        '200':
+          description: Password updated successfully
+
+  /kessokuApi/account/profile:
+    get:
+      tags:
+        - Account
+      summary: Get account profile
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: Account profile retrieved successfully
+
+  /kessokuApi/account/update:
+    patch:
+      tags:
+        - Account
+      summary: Update account
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateAccountInput'
+      responses:
+        '200':
+          description: Account updated successfully
+
+  /account/authInfo:
+    get:
+      tags:
+        - Account
+      summary: Get authentication info
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: Authentication info retrieved successfully
+
+  /oauth/login:
+    post:
+      tags:
+        - OAuth
+      summary: Login
+      security:
+        - basicAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/JwtLoginInput'
+      responses:
+        '200':
+          description: Login successful
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  token:
+                    type: string
+
+  /oauth/logout:
+    post:
+      tags:
+        - OAuth
+      summary: Logout
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: Logout successful
+
+  /kessokuApi/public/stores:
+    get:
+      tags:
+        - Kessoku_Public
+      summary: Get public stores
+      parameters:
+        - name: city
+          in: query
+          schema:
+            type: string
+        - name: instruments
+          in: query
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Stores retrieved successfully
+
+  /kessokuApi/public/storeInfo/{storeId}:
+    get:
+      tags:
+        - Kessoku_Public
+      summary: Get public store info
+      parameters:
+        - name: storeId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Store info retrieved successfully
+
+  /kessokuApi/public/classBookings/{classId}:
+    get:
+      tags:
+        - Kessoku_Public
+      summary: Get class bookings
+      parameters:
+        - name: classId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Class bookings retrieved successfully
+
+  /kessokuApi/class/booking:
+    post:
+      tags:
+        - Kessoku_Member
+      summary: Book class
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/BookClassesInput'
+      responses:
+        '200':
+          description: Class booked successfully
+
+  /kessokuApi/class/myBookings:
+    get:
+      tags:
+        - Kessoku_Member
+      summary: Get my bookings
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: Bookings retrieved successfully
+
+  /kessokuApi/class/booking/cancel/{bookingId}:
+    patch:
+      tags:
+        - Kessoku_Member
+      summary: Cancel booking
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: bookingId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Booking cancelled successfully
+
+  /kessokuApi/manufacture/myStores:
+    get:
+      tags:
+        - Kessoku_Manufacture
+      summary: Get my stores
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: Stores retrieved successfully
+
+  /kessokuApi/manufacture/myStoreInfo/{storeId}:
+    get:
+      tags:
+        - Kessoku_Manufacture
+      summary: Get my store info
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: storeId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Store info retrieved successfully
+
+  /kessokuApi/manufacture/upload/storeImg/{storeId}:
+    post:
+      tags:
+        - Kessoku_Manufacture
+      summary: Upload store image
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: storeId
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                file:
+                  type: string
+                  format: binary
+      responses:
+        '200':
+          description: Image uploaded successfully 
